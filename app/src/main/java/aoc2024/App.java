@@ -15,5 +15,8 @@ public class App {
         Day3 day3 = new Day3();
         day3.day3(false);
         day3.day3(true);
+
+        Day4 day4 = new Day4();
+        day4.day4();
     }
 }
