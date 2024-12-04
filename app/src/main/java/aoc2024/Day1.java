@@ -20,6 +20,7 @@ public class Day1 {
 
 
     public void day1() throws IOException {
+        System.out.println("\nDAY PART 1 AND 2 HERE ----------------->");
         Integer[][] parsedInput = parseInput(FIRST_PART_PATH.getPath());
 
         Integer[] columnLeft = parsedInput[0];

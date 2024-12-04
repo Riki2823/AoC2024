@@ -11,11 +11,14 @@ import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class Day2 {
     URL FIRST_PART_PATH = getClass().getClassLoader().getResource("Day2/Day2Part1.txt");
 
-    public void day2() throws IOException {
+    public void day2(boolean isSecondPart) throws IOException {
+        String part = isSecondPart ? "2" : "1";
+        System.out.println("\nDAY 2 PART "+ part + " HERE ----------------->");
         String[] inputParsed = parseInput(FIRST_PART_PATH.getPath());
         List<String[]> input = new ArrayList<>();
 
@@ -25,79 +28,93 @@ public class Day2 {
         int count = 0;
         for (String[] inputRow : input) {
             boolean isSave = true;
-            boolean increasing = false;
-            if (Integer.parseInt(inputRow[0]) < Integer.parseInt(inputRow[1])) {
-                increasing = true;
-            } else if (Integer.parseInt(inputRow[0]) == Integer.parseInt(inputRow[1])) {
-                if (Integer.parseInt(inputRow[0]) + 1 == Integer.parseInt(inputRow[2])) {
-                    increasing = true;
-                } else if (Integer.parseInt(inputRow[0]) - 1 != Integer.parseInt(inputRow[2])) {
-                    continue;
-                }
-            }
-            isSave = isSaveRow(inputRow, increasing, isSave);
+
+            isSave = isSaveRow(inputRow, isSecondPart,isSave);
             if (isSave) {
                 count++;
-            } else {
+            } else if (isSecondPart){
                 for (int i = 0; i < inputRow.length; i++) {
                     int value = Integer.parseInt(inputRow[i]);
                     inputRow[i] = null;
-                    isSave = isSaveRow(inputRow, increasing, true);
-                    if (!isSave) {
-                        inputRow[i] = String.valueOf(value);
+                    isSave = isSaveRow(inputRow, isSecondPart,true);
+                    inputRow[i] = String.valueOf(value);
+                    if (isSave) {
+                        count++;
+                        break;
                     }
                 }
             }
         }
         System.out.println("Save lines -> " + count);
-        System.out.println("Save lines fixed -> " + count);
 
     }
 
-    private static boolean isSaveRow(String[] inputRow, boolean increasing, boolean isSave) {
-
-        for (int i = 0; i < inputRow.length; i++) {
-            Integer second = null;
-            if (i == inputRow.length - 1 | inputRow[i] == null) {
+    private static boolean isSaveRow(String[] inputRow, boolean isSecondPart, boolean isSave) {
+        List<Integer> items = new ArrayList<>();
+        for(String s : inputRow){
+            if (s == null){
                 continue;
             }
-
-            if (inputRow[i + 1] == null) {
-                if (i != inputRow.length - 2) {
-                    second = Integer.parseInt(inputRow[i + 2]);
-                } else if (i == inputRow.length - 2) {
-                    return false;
-                }
-            } else {
-                second = Integer.parseInt(inputRow[i + 1]);
-            }
-            Integer first = Integer.parseInt(inputRow[i]);
-
-
-            if (increasing) {
-                int difference = (first - second) * -1;
-                if (difference > 3 || difference <= 0) {
-                    isSave = false;
-                    break;
-                }
-
-                if (first > second) {
-                    isSave = false;
-                    break;
-                }
-
-            } else {
-                int difference = (first - second);
-                if (difference > 3 || difference <= 0) {
-                    isSave = false;
-                    break;
-                }
-                if (first < second) {
-                    isSave = false;
-                    break;
-                }
+            items.add(Integer.parseInt(s));
+        }
+        boolean increasing = false;
+        
+        if (items.get(0) < items.get(1)) {
+            increasing = true;
+        } else if (Objects.equals(items.get(0), items.get(1))) {
+            if (items.get(0) + 1 == items.get(2)) {
+                increasing = true;
+            } else if (items.get(0) - 1 != items.get(2) && !isSecondPart) {
+                return false;
             }
         }
+        try {
+            for (int i = 0; i < inputRow.length; i++) {
+                Integer second = null;
+                if (i == inputRow.length - 1 | inputRow[i] == null) {
+                    continue;
+                }
+
+                if (inputRow[i + 1] == null) {
+                    if (i != inputRow.length - 2) {
+                        second = Integer.parseInt(inputRow[i + 2]);
+                    } else if (i == inputRow.length - 2) {
+                       continue;
+                    }
+                } else {
+                    second = Integer.parseInt(inputRow[i + 1]);
+                }
+                Integer first = Integer.parseInt(inputRow[i]);
+
+
+                if (increasing) {
+                    int difference = (first - second) * -1;
+                    if (difference > 3 || difference <= 0) {
+                        isSave = false;
+                        break;
+                    }
+
+                    if (first > second) {
+                        isSave = false;
+                        break;
+                    }
+
+                } else {
+                    int difference = (first - second);
+                    if (difference > 3 || difference <= 0) {
+                        isSave = false;
+                        break;
+                    }
+                    if (first < second) {
+                        isSave = false;
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e ){
+            System.out.println(e);
+        }
+
         return isSave;
     }
 
