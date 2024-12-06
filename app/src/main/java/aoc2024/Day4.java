@@ -1,128 +1,178 @@
 package aoc2024;
 
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Day4 {
-    URL FIRST_PART_PATH = getClass().getClassLoader().getResource("Day4/Day4Part1.txt");
+    private final URL FIRST_PART_PATH;
 
-    public void day4() throws IOException {
+    public Day4(URL pathFile){
+        this.FIRST_PART_PATH = pathFile;
+    }
+    public Integer day4(boolean isSecondPart) throws IOException {
+        String partNumber = isSecondPart ? "2" : "1";
+        System.out.println("\nDAY 4 PART " + partNumber + " HERE ----------------->");
         List<String[]> inputParsed = parseInput(FIRST_PART_PATH.getPath());
-        Integer result = 0;
+        Integer ret = null;
+        if (isSecondPart) {
+            ret = part2(inputParsed);
+        } else {
+            ret =part1(inputParsed);
+        }
+        return ret;
+    }
 
-        Integer rows = inputParsed.size();
-        Integer colums = inputParsed.get(0).length;
+    private Integer part2(List<String[]> inputParsed) {
+        int result = 0;
+        int rows = inputParsed.size();
+        int colums = inputParsed.get(0).length;
+
+
+        String[] chars = {"M", "A", "S"};
+        Map<Integer, List<Integer[]>> mapStorePositions = new HashMap<>();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < colums; j++) {
+                if (!inputParsed.get(i)[j].equals(chars[0])) {
+                    continue;
+                }
+
+                String[] directions = {"UR", "UL", "DR", "DL"};
+                for (String dir : directions) {
+                    boolean validPattern = true;
+                    Integer char2Positions = null;
+                    Integer[] char1Positions = {i, j};
+                    for (int k = 0; k < chars.length; k++) {
+                        int newRow = i, newCol = j;
+
+
+                        switch (dir) {
+                            case "UR" -> {
+                                newRow -= k;
+                                newCol += k;
+                            }
+                            case "UL" -> {
+                                newRow -= k;
+                                newCol -= k;
+                            }
+                            case "DR" -> {
+                                newRow += k;
+                                newCol += k;
+                            }
+                            case "DL" -> {
+                                newRow += k;
+                                newCol -= k;
+                            }
+                        }
+
+
+                        if (!isWithinBounds(newRow, newCol, rows, colums) ||
+                                !inputParsed.get(newRow)[newCol].equals(chars[k])) {
+                            validPattern = false;
+                            break;
+                        }else if (k == 1){
+                            char2Positions  = newRow + newCol;
+                        }
+                    }
+
+                    if (validPattern) {
+                        if (!mapStorePositions.containsKey(char2Positions)){
+                            List<Integer[]> aux = new ArrayList<>();
+                            aux.add(char1Positions);
+                            mapStorePositions.put(char2Positions, aux);
+                        }else{
+                            mapStorePositions.get(char2Positions).add(char1Positions);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Map.Entry<Integer, List<Integer[]>> e: mapStorePositions.entrySet()){
+
+            if (e.getValue().size()%2 == 0){
+                result += e.getValue().size()/2;
+            }else {
+                result += (e.getValue().size()-1)/2;
+            }
+
+        }
+        System.out.println("Number of X-MAS -----> " + result);
+        return result;
+    }
+
+    private Integer part1(List<String[]> inputParsed) {
+        int result = 0;
+
+        int rows = inputParsed.size();
+        int colums = inputParsed.get(0).length;
+
 
         String[] chars = {"X", "M", "A", "S"};
 
-        for (int i = 0; i < rows; i++){
-            //0, 0 means UpRight corner
-            //0,1 means UpLeft corner
-            //1, 0 means DownLeft corner
-            //1, 1 means DownRight corner
-            //NULL, 0 means nonFirstOrLastRowButFirstColumn
-            //NULL, 1 means nonFirstOrLastRowButFirstColumn
-            //1, NULL means nonFirstOrLastColumnButLastRow
-            //0, NULL means nonFirstOrLastColumnbutFIrstRow
-            //
-            List<Integer> corners = new ArrayList<>();
-            setCorner(i, corners, rows, 0);
-
-            String[] aux= inputParsed.get(i);
-            for (int j = 0; j < colums; j++){
-                List<String> possibleDirrections = new ArrayList<>();
-                setCorner(j, corners, colums, 1);
-
-                if (corners.get(0) == null && corners.get(1) == null){
-                    if (aux[j].equals(chars[0])){
-                        possibleDirrections = definePossibleDirrections(null, null, chars, inputParsed, i, j);
-                    }else {
-                        continue;
-                    }
-                }
-                if (corners.get(0) == null){
-
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < colums; j++) {
+                if (!inputParsed.get(i)[j].equals(chars[0])) {
+                    continue;
                 }
 
-            }
-        }
-    }
 
-    private List<String> definePossibleDirrections(Integer row, Integer column, String[] chars, List<String[]> inputParsed, Integer rowNumber, Integer columnNumber) {
-        List<String> ret = new ArrayList<>();
-        if (row == null && column ==null){
-            String[] dirrections = {"R", "L", "U", "D", "UR", "UL", "DR", "DL"};
-            ret = switchDirrections(dirrections, inputParsed, chars[1], rowNumber, columnNumber);
-        }
-        if (row == 0 && column == null){
+                String[] directions = {"R", "L", "U", "D", "UR", "UL", "DR", "DL"};
+                for (String dir : directions) {
+                    boolean validPattern = true;
 
-        }
-        return ret;
-    }
+                    for (int k = 0; k < chars.length; k++) {
+                        int newRow = i, newCol = j;
 
-    private List<String> switchDirrections(String[] dirrections, List<String[]> inputParsed, String charToCheck, Integer rowNumber, Integer columnNumber) {
-        List<String> ret = new ArrayList<>();
-        for (String s: dirrections){
-            switch (s){
-                case "R" -> {
-                    if (inputParsed.get(rowNumber)[columnNumber+1].equals(charToCheck)){
-                        ret.add("R");
+
+                        switch (dir) {
+                            case "R" -> newCol += k;
+                            case "L" -> newCol -= k;
+                            case "U" -> newRow -= k;
+                            case "D" -> newRow += k;
+                            case "UR" -> {
+                                newRow -= k;
+                                newCol += k;
+                            }
+                            case "UL" -> {
+                                newRow -= k;
+                                newCol -= k;
+                            }
+                            case "DR" -> {
+                                newRow += k;
+                                newCol += k;
+                            }
+                            case "DL" -> {
+                                newRow += k;
+                                newCol -= k;
+                            }
+                        }
+
+
+                        if (!isWithinBounds(newRow, newCol, rows, colums) ||
+                                !inputParsed.get(newRow)[newCol].equals(chars[k])) {
+                            validPattern = false;
+                            break;
+                        }
                     }
-                }
-                case "L" -> {
-                    if (inputParsed.get(rowNumber)[columnNumber-1].equals(charToCheck)) {
-                        ret.add("L");
-                    }
-                }
-                case "U" ->{
-                    if (inputParsed.get(rowNumber-1)[columnNumber].equals(charToCheck)) {
-                        ret.add("U");
-                    }
-                }
-                case "D" -> {
-                    if (inputParsed.get(rowNumber+1)[columnNumber].equals(charToCheck)){
-                    ret.add("D");
-                    }
-                }
-                case "UR" -> {
-                    if (inputParsed.get(rowNumber-1)[columnNumber+1].equals(charToCheck)) {
-                        ret.add("UR");
-                    }
-                }
-                case "UL" -> {
-                    if (inputParsed.get(rowNumber-1)[columnNumber-1].equals(charToCheck)){
-                        ret.add("UL");
-                    }
-                }
-                case "DR" -> {
-                    if (inputParsed.get(rowNumber+1)[columnNumber+1].equals(charToCheck)){
-                        ret.add("DR");
-                    }
-                }
-                case "DL" -> {
-                    if (inputParsed.get(rowNumber+1)[columnNumber-1].equals(charToCheck)){
-                        ret.add("DL");
+
+                    if (validPattern) {
+                        result++;
                     }
                 }
             }
         }
 
-        return ret;
+        System.out.println("Number of XMAS -----> " + result);
+        return result;
     }
 
-    private static void setCorner(int i, List<Integer> corners, Integer rows, Integer squarePostion) {
-        if (i == 0){
-            corners.add(squarePostion, 0);;
-        } else if (i == rows -1) {
-            corners.add(squarePostion, 1);
-        }else {
-            corners.add(squarePostion, null);
-        }
-    }
 
     private List<String[]> parseInput(String path) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(path));
@@ -136,15 +186,18 @@ public class Day4 {
         }
         br.close();
         List<String[]> result = new ArrayList<>(rowCount);
-        int index = 0;
+
         br = new BufferedReader(new FileReader(path));
         while ((line = br.readLine()) != null) {
             result.add(line.split(""));
-            index++;
         }
         br.close();
 
         return result;
+    }
+
+    private boolean isWithinBounds(int i, int j, int rows, int cols) {
+        return i >= 0 && i < rows && j >= 0 && j < cols;
     }
 
 }

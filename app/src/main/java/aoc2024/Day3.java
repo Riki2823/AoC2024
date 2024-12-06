@@ -15,7 +15,7 @@ public class Day3 {
     public void day3(boolean isSecondPart) throws IOException {
         //String inputParsed = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))";
         String part = isSecondPart ? "2" : "1";
-        System.out.println("\nDAY 2 PART "+ part + " HERE ----------------->");
+        System.out.println("\nDAY 3 PART "+ part + " HERE ----------------->");
         String inputParsed = parseInput(FIRST_PART_PATH.getPath());
         Pattern validMultiplicationPattern = Pattern.compile(isSecondPart ? regexGetMultiplicationsValidInstructons : regexGetMultiplicationsValid);
         Pattern multiplicationNumbersPattern = Pattern.compile(regexGetMultiplicationNumber);
