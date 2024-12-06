@@ -1,5 +1,6 @@
 package aoc2024;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -21,78 +22,91 @@ public class Day5 {
         Pair<List<String>, List<String>> inputData = parseInput(this.FIRST_PART_PATH.getPath());
         Integer result = 0;
         for (String update : inputData.getRight()) {
-            String[] individualUpdateValues = update.split(",");
+            List<String>individualUpdateValues = parseArray(update.split(","));
             boolean isHealthy = true;
-            for (int i = 0; i < individualUpdateValues.length; i++) {
-                List<String> afterNumbersToBe = definePreviousOrPosteriorNumbersToBe(individualUpdateValues[i], inputData.getLeft(), false, individualUpdateValues);
-                List<String> previousNumbersToBe = definePreviousOrPosteriorNumbersToBe(individualUpdateValues[i], inputData.getLeft(), true, individualUpdateValues);
+            for (int i = 0; i < individualUpdateValues.size(); i++) {
+                Pair<List<String>, List<String>> previousAndPosteriorNumbersToBe = definePreviousAndPosteriorNumbersToBe(individualUpdateValues.get(i), inputData.getLeft(), individualUpdateValues, i);
 
-                if (i != 0 && i != individualUpdateValues.length - 1) {
-                    isHealthy = checktoRight(i, individualUpdateValues, afterNumbersToBe) && checktoLeft(i, individualUpdateValues, previousNumbersToBe);
-
-                } else if (i == 0) {
-                    isHealthy = checktoRight(i, individualUpdateValues, afterNumbersToBe);;
-                } else if (i == individualUpdateValues.length - 1) {
-                    isHealthy = checktoLeft(i, individualUpdateValues, previousNumbersToBe);
+                for (String s : previousAndPosteriorNumbersToBe.getLeft()){
+                    boolean findIt = false;
+                    boolean findItOposite = false;
+                    for (int j = i-1; j >= 0; j--){
+                        if (individualUpdateValues.get(j).equals(s)){
+                            findIt= true;
+                            break;
+                        }
+                    }
+                    for (int j = i+1; j < individualUpdateValues.size(); j++){
+                        if (individualUpdateValues.get(j).equals(s)) {
+                            findItOposite = true;
+                            break;
+                        }
+                    }
+                    if (!findItOposite){
+                        isHealthy = findIt;
+                    }else{
+                        isHealthy = false;
+                        break;
+                    }
                 }
+
+
+                for (String s : previousAndPosteriorNumbersToBe.getRight()){
+                    boolean findIt = false;
+                    boolean findItOposite = false;
+                    for (int j = i+1; j < individualUpdateValues.size(); j++){
+                        if (individualUpdateValues.get(j).equals(s)){
+                            findIt= true;
+                            break;
+                        }
+                    }
+                    for (int j = i-1; j >=0; j--){
+                        if (individualUpdateValues.get(j).equals(s)) {
+                            findItOposite = true;
+                            break;
+                        }
+                    }
+                    if (!findItOposite){
+                        isHealthy = findIt;
+                    }else{
+                        isHealthy = false;
+                        break;
+                    }
+                }
+
+                if (!isHealthy){
+                    break;
+                }
+
             }
-            if (isHealthy){
-                result += Integer.parseInt(individualUpdateValues[(individualUpdateValues.length - 1) / 2]);
-                System.out.println("Kurwa");
+            if (isHealthy) {
+                result += Integer.parseInt(individualUpdateValues.get((individualUpdateValues.size() - 1) / 2));
             }
 
         }
-
+        System.out.println("Result of the updates -----> " + result);
         return result;
     }
 
-    private static boolean checktoRight(int i, String[] individualUpdateValues, List<String> afterNumbersToBe) {
-        int j = i + 1;
-        boolean isGood = true;
-        while (j < individualUpdateValues.length) {
-            if (!afterNumbersToBe.contains(individualUpdateValues[j])) {
-                isGood = false;
-                break;
-            }
-            j++;
-        }
-        return isGood;
-    }
 
-    private static boolean checktoLeft(int i, String[] individualUpdateValues, List<String> afterNumbersToBe) {
-        int j = i - 1;
-        boolean isGood = true;
-        while (j > 0) {
-            if (!afterNumbersToBe.contains(individualUpdateValues[j])) {
-                isGood = false;
-                break;
-            }
-            j++;
-        }
-        return isGood;
-    }
-
-    private List<String> definePreviousOrPosteriorNumbersToBe(String individualUpdateValue, List<String> rules, boolean isForPrevious, String[] individualUpdateValues) {
-        List<String> result = new ArrayList<>();
-        List<String> individualUpdateValuesList = parseArray(individualUpdateValues);
+    private Pair<List<String>, List<String>>definePreviousAndPosteriorNumbersToBe(String individualUpdateValue, List<String> rules, List<String> individualUpdateValues, int i) {
+        List<String> previousNumbers = new ArrayList<>();
+        List<String> posteriorNumbers = new ArrayList<>();
         for (String rule : rules) {
             String[] ruleNumbers = StringUtils.split(rule, "|");
-            if (isForPrevious) {
-                if (Integer.parseInt(ruleNumbers[1]) == Integer.parseInt(individualUpdateValue) && individualUpdateValuesList.contains(ruleNumbers[0])) {
-                    result.add(ruleNumbers[0]);
-                }
-            } else {
-                if (Integer.parseInt(ruleNumbers[0]) == Integer.parseInt(individualUpdateValue) && individualUpdateValuesList.contains(ruleNumbers[1])) {
-                    result.add(ruleNumbers[1]);
-                }
+            if (Integer.parseInt(ruleNumbers[1]) == Integer.parseInt(individualUpdateValue) && individualUpdateValues.contains(ruleNumbers[0]) && i != 0) {
+                previousNumbers.add(ruleNumbers[0]);
+            }
+            if (Integer.parseInt(ruleNumbers[0]) == Integer.parseInt(individualUpdateValue) && individualUpdateValues.contains(ruleNumbers[1]) && i != individualUpdateValues.size()-1) {
+                posteriorNumbers.add(ruleNumbers[1]);
             }
         }
-        return result;
+        return Pair.of(previousNumbers, posteriorNumbers);
     }
 
     private List<String> parseArray(String[] individualUpdateValues) {
         List<String> result = new ArrayList<>();
-        for (String s : individualUpdateValues){
+        for (String s : individualUpdateValues) {
             result.add(s);
         }
         return result;
