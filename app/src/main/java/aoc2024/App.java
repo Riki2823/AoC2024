@@ -21,6 +21,7 @@ public class App {
         day4.day4(true);
 
         Day5 day5 = new Day5(Day5.class.getClassLoader().getResource("Day5/Day5Part1.txt"));
-        day5.day5();
+        day5.day5(false);
+        day5.day5(true);
     }
 }
