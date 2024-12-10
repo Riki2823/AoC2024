@@ -27,5 +27,8 @@ public class App {
         //Day6 day6 = new Day6(Day6.class.getClassLoader().getResource("Day6/Day6Part1.txt"));
         //day6.day6(false);
         //day6.day6(true);
+
+        Day7 day7 = new Day7(Day7.class.getClassLoader().getResource("Day7/Day7Part1.txt"));
+        day7.day7(false);
     }
 }
