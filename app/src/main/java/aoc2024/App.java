@@ -29,6 +29,7 @@ public class App {
         //day6.day6(true);
 
         Day7 day7 = new Day7(Day7.class.getClassLoader().getResource("Day7/Day7Part1.txt"));
-        day7.day7(false);
+        //day7.day7(false);
+        day7.day7(true);
     }
 }

@@ -24,31 +24,82 @@ public class Day7 {
         for (Pair<Long, List<Integer>> row : inputParsed) {
             int numberOfNumbers = row.getRight().size();
             Long result = row.getLeft();
-            int numberPossibleOperationCombination = (int) Math.pow(2, numberOfNumbers-1);
-            List<String[]> possibleOperationCombiList = new ArrayList<>();
-            for (int i = 0; i < numberPossibleOperationCombination; i++){
-                String binOperations = Integer.toBinaryString(i);
-                if (binOperations.length() < numberOfNumbers -1){
-                    while (binOperations.length() != numberOfNumbers -1){
-                        binOperations = addCharToString(binOperations, '0', 0);
+
+            if (isSecondPart){
+                int combinationBase3 = (int) Math.pow(3, numberOfNumbers - 1);
+                List<String[]> possibleOperationCombiList = new ArrayList<>();
+                for (int i = 0; i < combinationBase3; i++){
+                    String operations = String.valueOf(asBase3(i));
+                    if (operations.length() < numberOfNumbers -1){
+                        while (operations.length() != numberOfNumbers -1){
+                            operations = addCharToString(operations, '0', 0);
+                        }
+                    }
+                    possibleOperationCombiList.add(operations.split(""));
+                }
+                for (String[] strings : possibleOperationCombiList) {
+                    List<Integer> inputNumbersMod = new ArrayList<>();
+                    int indexNumbers = 0;
+                    for (int j = 0; j < strings.length; j++) {
+                        indexNumbers = j;
+                        if (strings[j].equals("2")) {
+                            String newNuber = String.valueOf(row.getRight().get(j)) + String.valueOf(row.getRight().get(j + 1));
+                            indexNumbers ++;
+                            inputNumbersMod.add(Integer.parseInt(newNuber));
+                        } else if (j == strings.length-1){
+                            inputNumbersMod.add(row.getRight().get(j));
+                            inputNumbersMod.add(row.getRight().get(j+1));
+                        }else{
+                            inputNumbersMod.add(row.getRight().get(j));
+
+                        }
+                    }
+                    Long resolution = resolve(strings, inputNumbersMod);
+                    if (resolution.equals(result)){
+                        sum += resolution;
+                        break;
                     }
                 }
-                possibleOperationCombiList.add(binOperations.split(""));
-            }
-            for (String[] operators : possibleOperationCombiList){
-                Long resolution = resolve(operators, row.getRight());
-                if (resolution.equals(result)){
-                    sum += resolution;
-                    break;
+            }else {
+                int numberPossibleOperationCombination = (int) Math.pow(2, numberOfNumbers-1);
+                List<String[]> possibleOperationCombiList = new ArrayList<>();
+                for (int i = 0; i < numberPossibleOperationCombination; i++){
+                    String operations = Integer.toBinaryString(i);
+                    if (operations.length() < numberOfNumbers -1){
+                        while (operations.length() != numberOfNumbers -1){
+                            operations = addCharToString(operations, '0', 0);
+                        }
+                    }
+                    possibleOperationCombiList.add(operations.split(""));
+                }
+                for (String[] operators : possibleOperationCombiList){
+                    Long resolution = resolve(operators, row.getRight());
+                    if (resolution.equals(result)){
+                        sum += resolution;
+                        break;
+                    }
                 }
             }
         }
         System.out.println("Result of sum of all possible operation is -----> " + sum);
     }
 
+    public static long asBase3(int num) {
+        long ret = 0, factor = 1;
+        while (num > 0) {
+            ret += num % 3 * factor;
+            num /= 3;
+            factor *= 10;
+        }
+        return ret;
+    }
+
     private Long resolve(String[] operators, List<Integer> numbers) {
         Long result = Long.valueOf(numbers.get(0));
         int indexNumbers = 1;
+        if (numbers.size() == 1){
+            return Long.valueOf(numbers.get(0));
+        }
         for (String operator : operators) {
             if (operator.equals("0")) {
                 result *= numbers.get(indexNumbers);
